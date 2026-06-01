@@ -205,6 +205,40 @@ function labelFromUrl(url) {
   try { return new URL(url).hostname.replace("www.",""); } catch(e) { return url.slice(0,16); }
 }
 
+// ===== アップデート（git pull） =====
+function runUpdate() {
+  var btn    = document.getElementById("update-btn");
+  var status = document.getElementById("update-status");
+  btn.disabled    = true;
+  btn.textContent = "⏳ 更新中...";
+  status.style.display = "block";
+  status.style.color   = "#6b7280";
+  status.textContent   = "GitHub から最新版を取得しています...";
+
+  try {
+    var exec = require("child_process").exec;
+    // 拡張機能フォルダのパス
+    var extPath = require("path").dirname(require("path").dirname(location.pathname));
+    exec("git pull", { cwd: extPath }, function(err, stdout, stderr) {
+      if (err) {
+        btn.disabled    = false;
+        btn.textContent = "⬆️ アップデート";
+        status.style.color  = "#ef4444";
+        status.textContent  = "❌ 失敗: " + (stderr || err.message);
+        return;
+      }
+      status.style.color = "#22c55e";
+      status.textContent = "✅ 更新完了！再読み込みします...";
+      setTimeout(function() { location.reload(); }, 1500);
+    });
+  } catch(e) {
+    btn.disabled    = false;
+    btn.textContent = "⬆️ アップデート";
+    status.style.color  = "#ef4444";
+    status.textContent  = "❌ Node.js が利用できません: " + e.message;
+  }
+}
+
 // ===== ブラウザで開く（ダウンロード用） =====
 function openInBrowser() {
   var t = tabs[activeId];
