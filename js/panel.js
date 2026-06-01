@@ -1,145 +1,194 @@
 const FOLDER_KEY = "rakupochi_download_folder";
 const HOME_URL   = "https://rakupochi-illust.com";
 
-// タブ管理
-let tabs = []; // { id, url, title, iframe }
-let activeTabId = null;
-let tabCounter = 0;
+// ===== タブ管理 =====
+// tabs[id] = { id, iframe, history:[], histIdx:0, title }
+var tabs       = {};
+var tabOrder   = [];   // 並び順
+var activeId   = null;
+var tabCounter = 0;
 
-// ===== 起動時初期化 =====
+// ===== 起動 =====
 (function init() {
-  // 保存済みフォルダ復元
-  const saved = localStorage.getItem(FOLDER_KEY);
+  var saved = localStorage.getItem(FOLDER_KEY);
   if (saved) updateFolderDisplay(saved);
 
-  // ホームタブを作成
-  createTab(HOME_URL, "🔍 検索");
+  createTab(HOME_URL, "🔍 ラクポチ イラスト");
 
-  // postMessage リスナー（サイトからのリンク開封）
+  // サイトからの postMessage でリンクを新タブに開く
   window.addEventListener("message", function(e) {
     if (e.data && e.data.type === "openTab") {
-      var url   = e.data.url   || "";
-      var title = e.data.title || domainLabel(url);
-      if (url) createTab(url, title);
+      createTab(e.data.url || HOME_URL, e.data.title || "");
     }
   });
 })();
 
 // ===== タブ作成 =====
 function createTab(url, title) {
-  var id = "tab_" + (++tabCounter);
+  var id = "t" + (++tabCounter);
 
-  // iframe 作成
   var iframe = document.createElement("iframe");
+  iframe.style.cssText = "position:absolute;inset:0;width:100%;height:100%;border:none;display:none;";
   iframe.src = url;
-  iframe.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;border:none;display:none;";
   document.getElementById("iframe-container").appendChild(iframe);
 
-  tabs.push({ id: id, url: url, title: title, iframe: iframe });
+  tabs[id] = { id: id, iframe: iframe, history: [url], histIdx: 0, title: title || labelFromUrl(url) };
+  tabOrder.push(id);
+
   renderTabs();
   switchTab(id);
 }
 
 // ===== タブ切替 =====
 function switchTab(id) {
-  tabs.forEach(function(t) {
-    t.iframe.style.display = (t.id === id) ? "block" : "none";
-  });
-  activeTabId = id;
-  renderTabs();
+  if (!tabs[id]) return;
 
-  // 設定パネルが開いてたら閉じる
+  // 設定パネル閉じる
   document.getElementById("settings-panel").classList.remove("active");
-  document.getElementById("iframe-container").style.display = "block";
+
+  Object.keys(tabs).forEach(function(k) {
+    tabs[k].iframe.style.display = (k === id) ? "block" : "none";
+  });
+  activeId = id;
+  renderTabs();
+  syncNavBar();
 }
 
 // ===== タブ閉じる =====
 function closeTab(id, e) {
   e.stopPropagation();
-  var idx = tabs.findIndex(function(t) { return t.id === id; });
-  if (idx === -1 || tabs[idx].title === "🔍 検索") return; // ホームは閉じない
+  if (!tabs[id] || tabOrder.length <= 1) return;   // 最後の1枚は閉じない
 
-  tabs[idx].iframe.remove();
-  tabs.splice(idx, 1);
+  tabs[id].iframe.remove();
+  delete tabs[id];
+  tabOrder.splice(tabOrder.indexOf(id), 1);
 
-  // 閉じたのがアクティブなら隣へ
-  if (activeTabId === id) {
-    var next = tabs[Math.min(idx, tabs.length - 1)];
-    if (next) switchTab(next.id);
+  if (activeId === id) {
+    switchTab(tabOrder[Math.max(0, tabOrder.indexOf(id) - 1)] || tabOrder[0]);
   } else {
     renderTabs();
   }
 }
 
+// ===== 「+」で新規タブ =====
+function openNewTab() {
+  createTab(HOME_URL, "🔍 ラクポチ イラスト");
+}
+
+// ===== ナビゲーション =====
+function navBack() {
+  var t = tabs[activeId]; if (!t) return;
+  if (t.histIdx > 0) {
+    t.histIdx--;
+    t.iframe.src = t.history[t.histIdx];
+    syncNavBar();
+  }
+}
+
+function navForward() {
+  var t = tabs[activeId]; if (!t) return;
+  if (t.histIdx < t.history.length - 1) {
+    t.histIdx++;
+    t.iframe.src = t.history[t.histIdx];
+    syncNavBar();
+  }
+}
+
+function navReload() {
+  var t = tabs[activeId]; if (!t) return;
+  t.iframe.src = t.history[t.histIdx];
+}
+
+function navGo(url) {
+  var t = tabs[activeId]; if (!t || !url.trim()) return;
+  var full = url.match(/^https?:\/\//) ? url : "https://" + url;
+  // 履歴に追加
+  t.history = t.history.slice(0, t.histIdx + 1);
+  t.history.push(full);
+  t.histIdx = t.history.length - 1;
+  t.iframe.src = full;
+  t.title = labelFromUrl(full);
+  renderTabs();
+  syncNavBar();
+  document.getElementById("url-bar").blur();
+}
+
+// ===== URLバー・ボタン同期 =====
+function syncNavBar() {
+  var t = tabs[activeId];
+  if (!t) return;
+  var url = t.history[t.histIdx] || "";
+  document.getElementById("url-bar").value = url;
+  document.getElementById("btn-back").disabled  = t.histIdx <= 0;
+  document.getElementById("btn-fwd").disabled   = t.histIdx >= t.history.length - 1;
+}
+
 // ===== タブバー描画 =====
 function renderTabs() {
   var bar = document.getElementById("tab-bar");
+  // 既存のタブ要素を削除（+ボタンは残す）
+  var newTabBtn = document.getElementById("new-tab-btn");
   bar.innerHTML = "";
+  bar.appendChild(newTabBtn);
 
-  tabs.forEach(function(t) {
-    var isActive = t.id === activeTabId;
-    var isHome   = t.title === "🔍 検索";
+  tabOrder.forEach(function(id) {
+    var t = tabs[id]; if (!t) return;
+    var isActive = id === activeId;
 
-    var tab = document.createElement("div");
-    tab.className = "cep-tab" + (isActive ? " active" : "");
-    tab.onclick   = function() { switchTab(t.id); };
+    var el = document.createElement("div");
+    el.className = "cep-tab" + (isActive ? " active" : "");
+    el.onclick   = function() { switchTab(id); };
+
+    // ファビコン
+    var fav = document.createElement("img");
+    fav.className = "cep-tab-favicon";
+    var host = "";
+    try { host = new URL(t.history[t.histIdx]).hostname; } catch(e) {}
+    fav.src = host ? "https://www.google.com/s2/favicons?sz=16&domain=" + host : "icon.svg";
+    fav.onerror = function() { this.src = "icon.svg"; };
+    el.appendChild(fav);
 
     var label = document.createElement("span");
     label.className = "cep-tab-label";
-    label.textContent = isActive ? t.title : domainLabel(t.url === HOME_URL ? "検索" : t.url);
-    label.title = t.title;
-    tab.appendChild(label);
+    label.textContent = t.title || labelFromUrl(t.history[t.histIdx]);
+    label.title       = t.title;
+    el.appendChild(label);
 
-    if (!isHome) {
-      var closeBtn = document.createElement("button");
-      closeBtn.className = "cep-tab-close";
-      closeBtn.textContent = "×";
-      closeBtn.onclick = function(e) { closeTab(t.id, e); };
-      tab.appendChild(closeBtn);
+    // ×ボタン（タブが2枚以上のとき表示）
+    if (tabOrder.length > 1) {
+      var cls = document.createElement("button");
+      cls.className   = "cep-tab-close";
+      cls.textContent = "×";
+      cls.title       = "閉じる";
+      cls.onclick     = function(e) { closeTab(id, e); };
+      el.appendChild(cls);
     }
 
-    bar.appendChild(tab);
+    // タブを + ボタンの前に挿入
+    bar.insertBefore(el, newTabBtn);
   });
 }
 
-// ===== URL からラベルを作る =====
-function domainLabel(url) {
-  if (url === "検索") return "🔍 検索";
-  try {
-    return new URL(url).hostname.replace("www.", "").split(".")[0];
-  } catch(e) {
-    return url.slice(0, 12);
-  }
+// ===== URL からラベル =====
+function labelFromUrl(url) {
+  if (!url || url === HOME_URL) return "🔍 ラクポチ";
+  try { return new URL(url).hostname.replace("www.",""); } catch(e) { return url.slice(0,16); }
 }
 
 // ===== 設定パネル開閉 =====
 function toggleSettings() {
-  var panel     = document.getElementById("settings-panel");
-  var container = document.getElementById("iframe-container");
-  var btn       = document.getElementById("settings-btn");
-  var isOpen    = panel.classList.contains("active");
-
-  if (isOpen) {
-    panel.classList.remove("active");
-    container.style.display = "block";
-    btn.textContent = "⚙️ 設定";
-  } else {
-    panel.classList.add("active");
-    container.style.display = "none";
-    btn.textContent = "← 戻る";
-  }
+  var panel = document.getElementById("settings-panel");
+  panel.classList.toggle("active");
 }
 
 // ===== フォルダ選択 =====
 function selectFolder() {
   if (window.cep && window.cep.fs) {
-    var result = window.cep.fs.showOpenDialog(false, true, "ダウンロードフォルダを選択", "", "");
-    if (result && result.data && result.data.length > 0) {
-      saveFolder(result.data[0]);
-    }
+    var r = window.cep.fs.showOpenDialog(false, true, "ダウンロードフォルダを選択", "", "");
+    if (r && r.data && r.data.length) saveFolder(r.data[0]);
   } else {
-    var path = prompt("フォルダパスを入力", localStorage.getItem(FOLDER_KEY) || "");
-    if (path !== null && path.trim()) saveFolder(path.trim());
+    var p = prompt("フォルダパスを入力", localStorage.getItem(FOLDER_KEY) || "");
+    if (p !== null && p.trim()) saveFolder(p.trim());
   }
 }
 
@@ -156,7 +205,7 @@ function updateFolderDisplay(path) {
 }
 
 function flashSaved() {
-  var toast = document.getElementById("saved-toast");
-  toast.classList.add("show");
-  setTimeout(function() { toast.classList.remove("show"); }, 2000);
+  var t = document.getElementById("saved-toast");
+  t.classList.add("show");
+  setTimeout(function() { t.classList.remove("show"); }, 2000);
 }

@@ -2,218 +2,70 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ラクポチ イラスト</title>
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       overflow: hidden;
-      background: #fdf2f8;
+      background: #f3f3f3;
       font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
     }
 
-    /* ===== 全体レイアウト ===== */
     #root {
       display: flex;
       flex-direction: column;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
     }
 
-    /* ===== ヘッダー ===== */
-    #cep-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 5px 10px;
-      background: linear-gradient(135deg, rgba(255,255,255,0.85) 0%, rgba(255,240,245,0.75) 100%);
-      border-bottom: 1px solid rgba(236,72,153,0.1);
-      flex-shrink: 0;
-      gap: 8px;
-      min-height: 34px;
-    }
-
-    #cep-header .logo {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      flex-shrink: 0;
-    }
-
-    #cep-header .logo img { width: 18px; height: 18px; }
-
-    #cep-header .logo span {
-      font-size: 11px;
-      font-weight: 800;
-      color: #374151;
-      white-space: nowrap;
-    }
-
-    #settings-btn {
-      display: flex;
-      align-items: center;
-      background: none;
-      border: 1px solid rgba(236,72,153,0.2);
-      border-radius: 7px;
-      padding: 3px 8px;
-      font-size: 10px;
-      color: #9ca3af;
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
-    #settings-btn:hover {
-      background: rgba(236,72,153,0.06);
-      color: #ec4899;
-      border-color: rgba(236,72,153,0.35);
-    }
-
-    /* ===== iframe コンテナ ===== */
-    #iframe-container {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      min-height: 0;
-    }
-
-    /* ===== 設定パネル ===== */
-    #settings-panel {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      padding: 14px;
-      gap: 10px;
-      overflow-y: auto;
-      min-height: 0;
-    }
-
-    #settings-panel.active { display: flex; }
-
-    .settings-label {
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #9ca3af;
-    }
-
-    .settings-card {
-      background: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,245,250,0.65) 100%);
-      border: 1px solid rgba(255,255,255,0.8);
-      border-radius: 12px;
-      padding: 12px;
-      box-shadow: 0 2px 12px rgba(236,72,153,0.05), inset 0 1px 0 rgba(255,255,255,0.9);
-    }
-
-    .settings-card-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: #374151;
-      margin-bottom: 7px;
-    }
-
-    #folder-display {
-      width: 100%;
-      min-height: 38px;
-      background: rgba(255,255,255,0.65);
-      border: 1px solid rgba(236,72,153,0.15);
-      border-radius: 8px;
-      padding: 7px 10px;
-      font-size: 10px;
-      color: #374151;
-      word-break: break-all;
-      line-height: 1.5;
-      margin-bottom: 9px;
-    }
-
-    #folder-display.empty { color: #d1d5db; font-style: italic; }
-
-    #select-folder-btn {
-      width: 100%;
-      padding: 8px;
-      border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.3);
-      background: linear-gradient(135deg, rgba(249,168,212,0.9) 0%, rgba(236,72,153,0.95) 40%, rgba(219,39,119,0.9) 100%);
-      box-shadow: 0 3px 10px rgba(236,72,153,0.28);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s;
-    }
-
-    #select-folder-btn:hover { opacity: 0.88; }
-    #select-folder-btn:active { transform: scale(0.98); }
-
-    #saved-toast {
-      display: none;
-      align-items: center;
-      gap: 4px;
-      font-size: 10px;
-      color: #22c55e;
-      font-weight: 600;
-      margin-top: 5px;
-    }
-
-    #saved-toast.show { display: flex; }
-
-    .settings-note {
-      background: rgba(255,255,255,0.5);
-      border: 1px solid rgba(255,255,255,0.65);
-      border-radius: 8px;
-      padding: 9px 11px;
-      font-size: 10px;
-      color: #9ca3af;
-      line-height: 1.6;
-    }
-
-    /* ===== タブバー（下部） ===== */
+    /* ==============================
+       タブバー
+    ============================== */
     #tab-bar {
       display: flex;
-      align-items: stretch;
-      background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,240,245,0.85) 100%);
-      border-top: 1px solid rgba(236,72,153,0.12);
+      align-items: flex-end;
+      background: #dee1e6;
+      padding: 6px 4px 0;
       flex-shrink: 0;
       overflow-x: auto;
       overflow-y: hidden;
-      min-height: 32px;
-      max-height: 32px;
       scrollbar-width: none;
+      gap: 1px;
+      min-height: 34px;
     }
-
     #tab-bar::-webkit-scrollbar { display: none; }
 
     .cep-tab {
       display: flex;
       align-items: center;
-      gap: 4px;
-      padding: 0 10px;
-      min-width: 60px;
-      max-width: 130px;
+      gap: 5px;
+      padding: 0 10px 0 10px;
+      height: 28px;
+      min-width: 80px;
+      max-width: 160px;
+      background: #c9cdd4;
+      border-radius: 8px 8px 0 0;
       cursor: pointer;
-      border-right: 1px solid rgba(236,72,153,0.08);
-      transition: background 0.12s;
       flex-shrink: 0;
+      transition: background 0.1s;
       position: relative;
     }
-
-    .cep-tab:hover {
-      background: rgba(236,72,153,0.06);
+    .cep-tab:hover { background: #d8dbe0; }
+    .cep-tab.active {
+      background: #f9f0f5;
+      z-index: 1;
     }
 
-    .cep-tab.active {
-      background: rgba(236,72,153,0.1);
-      border-bottom: 2px solid #ec4899;
+    .cep-tab-favicon {
+      width: 14px; height: 14px;
+      flex-shrink: 0;
+      border-radius: 2px;
     }
 
     .cep-tab-label {
-      font-size: 10px;
-      color: #6b7280;
+      font-size: 11px;
+      color: #4b5563;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -221,65 +73,230 @@
       min-width: 0;
       user-select: none;
     }
-
-    .cep-tab.active .cep-tab-label {
-      color: #ec4899;
-      font-weight: 700;
-    }
+    .cep-tab.active .cep-tab-label { color: #1f2937; font-weight: 600; }
 
     .cep-tab-close {
       background: none;
       border: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
       font-size: 11px;
-      color: #d1d5db;
+      color: #9ca3af;
       cursor: pointer;
-      padding: 0 1px;
-      line-height: 1;
+      display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
-      transition: color 0.1s;
+      transition: background 0.1s, color 0.1s;
+      line-height: 1;
+    }
+    .cep-tab-close:hover { background: rgba(0,0,0,0.1); color: #374151; }
+
+    /* 新規タブ + ボタン */
+    #new-tab-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: none;
+      border: none;
+      font-size: 16px;
+      color: #6b7280;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-left: 2px;
+      margin-bottom: 1px;
+      transition: background 0.1s;
+    }
+    #new-tab-btn:hover { background: rgba(0,0,0,0.08); }
+
+    /* ==============================
+       ナビゲーションバー
+    ============================== */
+    #nav-bar {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 5px 8px;
+      background: #f9f0f5;
+      border-bottom: 1px solid rgba(236,72,153,0.1);
+      flex-shrink: 0;
+      min-height: 38px;
     }
 
-    .cep-tab-close:hover { color: #ec4899; }
+    /* 戻る・進む・更新ボタン */
+    .nav-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: #374151;
+      flex-shrink: 0;
+      transition: background 0.1s;
+    }
+    .nav-btn:hover:not(:disabled) { background: rgba(0,0,0,0.07); }
+    .nav-btn:disabled { color: #c9cdd4; cursor: default; }
+    .nav-btn svg { width: 14px; height: 14px; }
+
+    /* URLバー */
+    #url-bar {
+      flex: 1;
+      min-width: 0;
+      height: 26px;
+      background: #ede8f0;
+      border: 1.5px solid transparent;
+      border-radius: 13px;
+      padding: 0 12px;
+      font-size: 11px;
+      color: #1f2937;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    #url-bar:focus {
+      background: #fff;
+      border-color: rgba(236,72,153,0.4);
+    }
+
+    /* 設定ボタン */
+    #settings-btn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      background: none;
+      border: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: background 0.1s;
+    }
+    #settings-btn:hover { background: rgba(0,0,0,0.07); }
+
+    /* ==============================
+       コンテンツエリア
+    ============================== */
+    #content-area {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    #iframe-container {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* ==============================
+       設定パネル
+    ============================== */
+    #settings-panel {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      inset: 0;
+      padding: 14px;
+      gap: 10px;
+      overflow-y: auto;
+      background: #fdf2f8;
+    }
+    #settings-panel.active { display: flex; }
+
+    .settings-label {
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: #9ca3af;
+    }
+    .settings-card {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.9);
+      border-radius: 12px; padding: 12px;
+      box-shadow: 0 2px 12px rgba(236,72,153,0.06);
+    }
+    .settings-card-title { font-size: 11px; font-weight: 600; color: #374151; margin-bottom: 7px; }
+
+    #folder-display {
+      width: 100%; min-height: 38px;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(236,72,153,0.15);
+      border-radius: 8px; padding: 7px 10px;
+      font-size: 10px; color: #374151;
+      word-break: break-all; line-height: 1.5; margin-bottom: 9px;
+    }
+    #folder-display.empty { color: #d1d5db; font-style: italic; }
+
+    #select-folder-btn {
+      width: 100%; padding: 8px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: linear-gradient(135deg, rgba(249,168,212,0.9) 0%, rgba(236,72,153,0.95) 40%, rgba(219,39,119,0.9) 100%);
+      box-shadow: 0 3px 10px rgba(236,72,153,0.28);
+      color: #fff; font-size: 11px; font-weight: 700; cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    #select-folder-btn:hover { opacity: 0.88; }
+
+    #saved-toast {
+      display: none; align-items: center; gap: 4px;
+      font-size: 10px; color: #22c55e; font-weight: 600; margin-top: 5px;
+    }
+    #saved-toast.show { display: flex; }
+
+    .settings-note {
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: 8px; padding: 9px 11px;
+      font-size: 10px; color: #9ca3af; line-height: 1.6;
+    }
   </style>
 </head>
 <body>
   <div id="root">
-    <!-- ヘッダー -->
-    <div id="cep-header">
-      <div class="logo">
-        <img src="icon.svg" alt="ラクポチ" />
-        <span>ラクポチ イラスト</span>
-      </div>
-      <button id="settings-btn" onclick="toggleSettings()">⚙️ 設定</button>
+
+    <!-- タブバー（上部） -->
+    <div id="tab-bar">
+      <!-- JS で動的生成 -->
+      <button id="new-tab-btn" onclick="openNewTab()" title="新しいタブ">+</button>
     </div>
 
-    <!-- iframe コンテナ（タブごとの iframe がここに入る） -->
-    <div id="iframe-container"></div>
+    <!-- ナビゲーションバー -->
+    <div id="nav-bar">
+      <button class="nav-btn" id="btn-back" onclick="navBack()" disabled title="戻る">
+        <svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="nav-btn" id="btn-fwd" onclick="navForward()" disabled title="進む">
+        <svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <button class="nav-btn" id="btn-reload" onclick="navReload()" title="更新">
+        <svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+      <input id="url-bar" type="text" spellcheck="false" placeholder="URL を入力..."
+        onkeydown="if(event.key==='Enter') navGo(this.value)" />
+      <button class="nav-btn" id="settings-btn" onclick="toggleSettings()" title="設定">
+        ⚙️
+      </button>
+    </div>
 
-    <!-- 設定パネル（iframe と同じ位置に表示） -->
-    <div id="settings-panel">
-      <p class="settings-label">ダウンロードフォルダ設定</p>
-      <div class="settings-card">
-        <p class="settings-card-title">現在の保存先フォルダ</p>
-        <div id="folder-display" class="empty">フォルダが設定されていません</div>
-        <button id="select-folder-btn" onclick="selectFolder()">フォルダを選択</button>
-        <div id="saved-toast">
-          <svg width="13" height="13" fill="none" stroke="#22c55e" stroke-width="2.5" viewBox="0 0 24 24">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-          保存しました
+    <!-- コンテンツエリア -->
+    <div id="content-area">
+      <div id="iframe-container"></div>
+
+      <!-- 設定パネル -->
+      <div id="settings-panel">
+        <p class="settings-label">ダウンロードフォルダ設定</p>
+        <div class="settings-card">
+          <p class="settings-card-title">現在の保存先フォルダ</p>
+          <div id="folder-display" class="empty">フォルダが設定されていません</div>
+          <button id="select-folder-btn" onclick="selectFolder()">フォルダを選択</button>
+          <div id="saved-toast">
+            <svg width="13" height="13" fill="none" stroke="#22c55e" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+            保存しました
+          </div>
         </div>
+        <p class="settings-note">
+          ここで設定したフォルダに、ダウンロードしたイラストが保存されます。<br>
+          設定は次回起動時にも引き継がれます。
+        </p>
       </div>
-      <p class="settings-note">
-        ここで設定したフォルダに、ダウンロードしたイラストが保存されます。<br>
-        設定は次回起動時にも引き継がれます。
-      </p>
     </div>
 
-    <!-- タブバー（下部） -->
-    <div id="tab-bar"></div>
   </div>
-
   <script src="js/panel.js"></script>
 </body>
 </html>
