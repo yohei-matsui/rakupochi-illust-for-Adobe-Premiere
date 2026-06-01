@@ -276,11 +276,6 @@
       </button>
       <input id="url-bar" type="text" spellcheck="false" placeholder="URL を入力..."
         onkeydown="if(event.key==='Enter') navGo(this.value)" />
-      <button id="save-btn" onclick="smartDownload()" title="このページの画像を保存フォルダに保存"
-        style="flex-shrink:0;display:flex;align-items:center;gap:3px;background:linear-gradient(135deg,rgba(249,168,212,0.9) 0%,rgba(236,72,153,0.95) 100%);border:none;border-radius:12px;padding:0 10px;height:26px;color:#fff;font-size:10px;font-weight:700;cursor:pointer;white-space:nowrap;transition:opacity 0.15s;">
-        <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        保存
-      </button>
       <button class="nav-btn" id="settings-btn" onclick="toggleSettings()" title="設定">
         ⚙️
       </button>
