@@ -142,10 +142,16 @@ function renderTabs() {
     // ファビコン
     var fav = document.createElement("img");
     fav.className = "cep-tab-favicon";
-    var host = "";
-    try { host = new URL(t.history[t.histIdx]).hostname; } catch(e) {}
-    fav.src = host ? "https://www.google.com/s2/favicons?sz=16&domain=" + host : "icon.svg";
-    fav.onerror = function() { this.src = "icon.svg"; };
+    var currentUrl = t.history[t.histIdx] || "";
+    var isHome = currentUrl === HOME_URL || currentUrl.indexOf("rakupochi") !== -1;
+    if (isHome) {
+      fav.src = "icon.svg";
+    } else {
+      var host = "";
+      try { host = new URL(currentUrl).hostname; } catch(e) {}
+      fav.src = host ? "https://www.google.com/s2/favicons?sz=16&domain=" + host : "icon.svg";
+      fav.onerror = function() { this.src = "icon.svg"; };
+    }
     el.appendChild(fav);
 
     var label = document.createElement("span");
