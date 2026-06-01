@@ -21,9 +21,6 @@ var tabCounter = 0;
     if (e.data.type === "openTab") {
       createTab(e.data.url || HOME_URL, e.data.title || "");
     }
-    if (e.data.type === "download") {
-      downloadImage(e.data.imageUrl, e.data.title, e.data.siteName);
-    }
   });
 
   // パネルサイズ変更時に全 iframe を明示的にリサイズ
@@ -206,88 +203,6 @@ function renderTabs() {
 function labelFromUrl(url) {
   if (!url || url === HOME_URL) return "ラクポチ";
   try { return new URL(url).hostname.replace("www.",""); } catch(e) { return url.slice(0,16); }
-}
-
-// ===== 画像ダウンロード =====
-function downloadImage(imageUrl, title, siteName) {
-  var folder = localStorage.getItem(FOLDER_KEY);
-  if (!folder) {
-    showToast("⚙️ 先に設定でフォルダを指定してください", "warn");
-    return;
-  }
-
-  // 拡張子を URL から取得（なければ .png）
-  var ext = ".png";
-  var match = imageUrl.match(/\.(png|jpg|jpeg|gif|svg|webp)(\?|$)/i);
-  if (match) ext = "." + match[1].toLowerCase();
-
-  // ファイル名：タイトル + タイムスタンプ
-  var safe = (title || siteName || "illust").replace(/[\\/:*?"<>|]/g, "_").slice(0, 40);
-  var ts   = Date.now();
-  var sep  = folder.endsWith("/") || folder.endsWith("\\") ? "" : "/";
-  var savePath = folder + sep + safe + "_" + ts + ext;
-
-  showToast("⬇️ ダウンロード中...", "info");
-
-  var xhr = new XMLHttpRequest();
-  xhr.open("GET", imageUrl, true);
-  xhr.responseType = "arraybuffer";
-  xhr.onload = function() {
-    if (xhr.status !== 200) {
-      showToast("❌ 取得失敗（" + xhr.status + "）", "error");
-      return;
-    }
-    var bytes  = new Uint8Array(xhr.response);
-    var binary = "";
-    for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    var b64 = btoa(binary);
-
-    if (window.cep && window.cep.fs) {
-      // CEP: base64 で書き込み（mode 0x8000 = Base64 decode）
-      var result = window.cep.fs.writeFile(savePath, b64, 0x8000);
-      if (result.err === 0) {
-        showToast("✅ 保存しました", "ok");
-      } else {
-        showToast("❌ 保存失敗（err:" + result.err + "）", "error");
-      }
-    } else {
-      // ブラウザ環境フォールバック：通常ダウンロード
-      var blob = new Blob([xhr.response]);
-      var a    = document.createElement("a");
-      a.href   = URL.createObjectURL(blob);
-      a.download = safe + "_" + ts + ext;
-      a.click();
-      showToast("✅ ダウンロードしました", "ok");
-    }
-  };
-  xhr.onerror = function() { showToast("❌ 通信エラー", "error"); };
-  xhr.send();
-}
-
-// ===== トースト通知 =====
-function showToast(msg, type) {
-  var el = document.getElementById("dl-toast");
-  if (!el) {
-    el = document.createElement("div");
-    el.id = "dl-toast";
-    el.style.cssText = [
-      "position:fixed;bottom:44px;left:50%;transform:translateX(-50%)",
-      "padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600",
-      "white-space:nowrap;z-index:9999;pointer-events:none",
-      "transition:opacity 0.2s;box-shadow:0 4px 16px rgba(0,0,0,0.15)"
-    ].join(";");
-    document.body.appendChild(el);
-  }
-  var bg = type === "ok"   ? "rgba(34,197,94,0.92)"
-         : type === "warn" ? "rgba(251,191,36,0.92)"
-         : type === "error"? "rgba(239,68,68,0.92)"
-         :                   "rgba(100,116,139,0.92)";
-  el.style.background = bg;
-  el.style.color = "#fff";
-  el.textContent = msg;
-  el.style.opacity = "1";
-  clearTimeout(el._timer);
-  el._timer = setTimeout(function() { el.style.opacity = "0"; }, 2500);
 }
 
 // ===== 設定パネル開閉 =====
