@@ -205,6 +205,19 @@ function labelFromUrl(url) {
   try { return new URL(url).hostname.replace("www.",""); } catch(e) { return url.slice(0,16); }
 }
 
+// ===== ブラウザで開く（ダウンロード用） =====
+function openInBrowser() {
+  var t = tabs[activeId];
+  if (!t) return;
+  var url = t.history[t.histIdx] || "";
+  if (!url) return;
+  if (window.cep && window.cep.util) {
+    window.cep.util.openURLInDefaultBrowser(url);
+  } else {
+    window.open(url, "_blank");
+  }
+}
+
 // ===== 設定パネル開閉 =====
 function toggleSettings() {
   var panel = document.getElementById("settings-panel");

@@ -268,6 +268,9 @@
       </button>
       <input id="url-bar" type="text" spellcheck="false" placeholder="URL を入力..."
         onkeydown="if(event.key==='Enter') navGo(this.value)" />
+      <button class="nav-btn" id="open-browser-btn" onclick="openInBrowser()" title="ブラウザで開く（ダウンロード用）">
+        <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      </button>
       <button class="nav-btn" id="settings-btn" onclick="toggleSettings()" title="設定">
         ⚙️
       </button>
