@@ -21,16 +21,39 @@ var tabCounter = 0;
       createTab(e.data.url || HOME_URL, e.data.title || "");
     }
   });
+
+  // パネルサイズ変更時に全 iframe を明示的にリサイズ
+  var container = document.getElementById("iframe-container");
+  function fitIframes() {
+    var w = container.offsetWidth;
+    var h = container.offsetHeight;
+    Object.keys(tabs).forEach(function(id) {
+      var f = tabs[id].iframe;
+      f.style.width  = w + "px";
+      f.style.height = h + "px";
+    });
+  }
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(fitIframes).observe(container);
+  } else {
+    window.addEventListener("resize", fitIframes);
+  }
 })();
 
 // ===== タブ作成 =====
 function createTab(url, title) {
   var id = "t" + (++tabCounter);
 
+  var container = document.getElementById("iframe-container");
   var iframe = document.createElement("iframe");
-  iframe.style.cssText = "position:absolute;inset:0;width:100%;height:100%;border:none;display:none;";
+  iframe.style.cssText = "position:absolute;top:0;left:0;border:none;display:none;";
+  iframe.width  = container.offsetWidth  || "100%";
+  iframe.height = container.offsetHeight || "100%";
+  iframe.style.width  = (container.offsetWidth  || 400) + "px";
+  iframe.style.height = (container.offsetHeight || 600) + "px";
   iframe.src = url;
-  document.getElementById("iframe-container").appendChild(iframe);
+  container.appendChild(iframe);
 
   tabs[id] = { id: id, iframe: iframe, history: [url], histIdx: 0, title: title || labelFromUrl(url) };
   tabOrder.push(id);
