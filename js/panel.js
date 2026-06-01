@@ -13,7 +13,7 @@ var tabCounter = 0;
   var saved = localStorage.getItem(FOLDER_KEY);
   if (saved) updateFolderDisplay(saved);
 
-  createTab(HOME_URL, "🔍 ラクポチ イラスト");
+  createTab(HOME_URL, "ラクポチ イラスト");
 
   // サイトからの postMessage でリンクを新タブに開く
   window.addEventListener("message", function(e) {
@@ -95,7 +95,7 @@ function closeTab(id, e) {
 
 // ===== 「+」で新規タブ =====
 function openNewTab() {
-  createTab(HOME_URL, "🔍 ラクポチ イラスト");
+  createTab(HOME_URL, "ラクポチ イラスト");
 }
 
 // ===== ナビゲーション =====
@@ -200,7 +200,7 @@ function renderTabs() {
 
 // ===== URL からラベル =====
 function labelFromUrl(url) {
-  if (!url || url === HOME_URL) return "🔍 ラクポチ";
+  if (!url || url === HOME_URL) return "ラクポチ";
   try { return new URL(url).hostname.replace("www.",""); } catch(e) { return url.slice(0,16); }
 }
 
