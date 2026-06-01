@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.rakupochi.illustsearch" ExtensionBundleVersion="1.0.0" ExtensionBundleName="ラクポチ イラスト">
+  <ExtensionList>
+    <Extension Id="com.rakupochi.illustsearch.panel" Version="1.0.0"/>
+  </ExtensionList>
+
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="PPRO" Version="[13.0,99.9]"/>
+    </HostList>
+    <LocaleList>
+      <Locale Code="All"/>
+    </LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="7.0"/>
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+
+  <DispatchInfoList>
+    <Extension Id="com.rakupochi.illustsearch.panel">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./index.html</MainPath>
+          <ScriptPath>./jsx/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--allow-file-access-from-files</Parameter>
+            <Parameter>--allow-running-insecure-content</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>true</AutoVisible>
+        </Lifecycle>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>ラクポチ イラスト</Menu>
+          <Geometry>
+            <Size>
+              <Height>600</Height>
+              <Width>400</Width>
+            </Size>
+            <MinSize>
+              <Height>400</Height>
+              <Width>320</Width>
+            </MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

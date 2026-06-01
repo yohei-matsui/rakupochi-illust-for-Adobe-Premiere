@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ラクポチ イラスト</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #fdf2f8;
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", sans-serif;
+    }
+
+    /* ===== ヘッダー（設定ボタンのみ） ===== */
+    #cep-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.8) 0%, rgba(255,240,245,0.7) 100%);
+      border-bottom: 1px solid rgba(236, 72, 153, 0.12);
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    #cep-header .logo {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #cep-header .logo img {
+      width: 20px;
+      height: 20px;
+    }
+
+    #cep-header .logo span {
+      font-size: 11px;
+      font-weight: 800;
+      color: #374151;
+      letter-spacing: -0.02em;
+    }
+
+    #settings-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: 1px solid rgba(236,72,153,0.2);
+      border-radius: 8px;
+      padding: 4px 9px;
+      font-size: 10px;
+      color: #9ca3af;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    #settings-btn:hover {
+      background: rgba(236,72,153,0.06);
+      color: #ec4899;
+      border-color: rgba(236,72,153,0.4);
+    }
+
+    /* ===== メインコンテナ ===== */
+    #main-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ===== iframe（検索サイト） ===== */
+    #search-frame {
+      flex: 1;
+      width: 100%;
+      border: none;
+      display: block;
+      min-height: 0;
+    }
+
+    /* ===== 設定パネル ===== */
+    #settings-panel {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      padding: 16px;
+      gap: 12px;
+      overflow-y: auto;
+      min-height: 0;
+    }
+
+    #settings-panel.active {
+      display: flex;
+    }
+
+    .settings-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #9ca3af;
+      padding: 0 2px;
+    }
+
+    .settings-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.75) 0%, rgba(255,245,250,0.65) 100%);
+      border: 1px solid rgba(255,255,255,0.8);
+      border-radius: 14px;
+      padding: 14px;
+      box-shadow: 0 2px 16px rgba(236,72,153,0.06), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    .settings-card-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+
+    /* パス表示エリア */
+    #folder-display {
+      width: 100%;
+      min-height: 40px;
+      background: rgba(255,255,255,0.65);
+      border: 1px solid rgba(236,72,153,0.15);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 10px;
+      color: #374151;
+      word-break: break-all;
+      line-height: 1.5;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+
+    #folder-display.empty {
+      color: #d1d5db;
+      font-style: italic;
+    }
+
+    /* フォルダ選択ボタン */
+    #select-folder-btn {
+      width: 100%;
+      padding: 9px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.3);
+      background: linear-gradient(135deg, rgba(249,168,212,0.9) 0%, rgba(236,72,153,0.95) 40%, rgba(219,39,119,0.9) 100%);
+      box-shadow: 0 3px 12px rgba(236,72,153,0.3);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      box-sizing: border-box;
+    }
+
+    #select-folder-btn:hover { opacity: 0.9; }
+    #select-folder-btn:active { transform: scale(0.98); }
+
+    /* 保存済みトースト */
+    #saved-toast {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: #22c55e;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    #saved-toast.show { display: flex; }
+
+    /* 補足 */
+    .settings-note {
+      background: rgba(255,255,255,0.5);
+      border: 1px solid rgba(255,255,255,0.65);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 10px;
+      color: #9ca3af;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div id="main-container">
+    <!-- ヘッダー -->
+    <div id="cep-header">
+      <div class="logo">
+        <img src="icon.svg" alt="ラクポチ イラスト" />
+        <span>ラクポチ イラスト</span>
+      </div>
+      <button id="settings-btn" onclick="toggleSettings()">
+        ⚙️ 設定
+      </button>
+    </div>
+
+    <!-- 検索 iframe -->
+    <iframe
+      id="search-frame"
+      src="https://rakupochi-illust.com"
+      allowtransparency="true"
+    ></iframe>
+
+    <!-- 設定パネル -->
+    <div id="settings-panel">
+      <p class="settings-label">ダウンロードフォルダ設定</p>
+
+      <div class="settings-card">
+        <p class="settings-card-title">現在の保存先フォルダ</p>
+        <div id="folder-display" class="empty">フォルダが設定されていません</div>
+        <button id="select-folder-btn" onclick="selectFolder()">
+          フォルダを選択
+        </button>
+        <div id="saved-toast">
+          <svg width="14" height="14" fill="none" stroke="#22c55e" stroke-width="2.5" viewBox="0 0 24 24">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          保存しました
+        </div>
+      </div>
+
+      <p class="settings-note">
+        ここで設定したフォルダに、ダウンロードしたイラストが保存されます。<br>
+        設定は次回起動時にも引き継がれます。
+      </p>
+    </div>
+  </div>
+
+  <script src="js/panel.js"></script>
+</body>
+</html>

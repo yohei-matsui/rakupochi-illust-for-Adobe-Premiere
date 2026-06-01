@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- メイン背景グラデーション -->
+    <linearGradient id="bgGrad" x1="10%" y1="0%" x2="90%" y2="100%">
+      <stop offset="0%" style="stop-color:#f9a8d4"/>
+      <stop offset="40%" style="stop-color:#ec4899"/>
+      <stop offset="100%" style="stop-color:#9d174d"/>
+    </linearGradient>
+    <!-- 上部ハイライトグラデーション（光の反射） -->
+    <linearGradient id="shine" x1="0%" y1="0%" x2="30%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.45"/>
+      <stop offset="60%" style="stop-color:#ffffff;stop-opacity:0.08"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+    <!-- 鉛筆本体グラデーション -->
+    <linearGradient id="pencilBody" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.7"/>
+      <stop offset="35%" style="stop-color:#ffffff;stop-opacity:1"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.82"/>
+    </linearGradient>
+    <!-- 鉛筆の木部グラデーション -->
+    <linearGradient id="woodGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#fde68a;stop-opacity:0.9"/>
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:0.85"/>
+    </linearGradient>
+    <!-- 全体ドロップシャドウ -->
+    <filter id="outerShadow" x="-15%" y="-5%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="18" stdDeviation="24" flood-color="#831843" flood-opacity="0.55"/>
+    </filter>
+    <!-- 鉛筆シャドウ -->
+    <filter id="pencilShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="4" dy="6" stdDeviation="8" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <!-- ===== 背面の奥行きレイヤー（Google アイコン風の積層感） ===== -->
+  <rect x="38" y="52" width="440" height="440" rx="90" fill="#831843" opacity="0.35"/>
+  <rect x="28" y="36" width="448" height="448" rx="94" fill="#be185d" opacity="0.55"/>
+
+  <!-- ===== メイン背景 ===== -->
+  <rect x="18" y="18" width="460" height="460" rx="98" fill="url(#bgGrad)" filter="url(#outerShadow)"/>
+
+  <!-- ===== 光沢ハイライト（上半分だけ） ===== -->
+  <clipPath id="topHalf">
+    <rect x="18" y="18" width="460" height="230" rx="98"/>
+  </clipPath>
+  <rect x="18" y="18" width="460" height="460" rx="98" fill="url(#shine)" clip-path="url(#topHalf)"/>
+
+  <!-- ===== 鉛筆アイコン（大きく・明確に） ===== -->
+  <g transform="translate(256,258) rotate(45)" filter="url(#pencilShadow)">
+    <!-- 消しゴム（ピンク寄りの白、角丸） -->
+    <rect x="-33" y="-192" width="66" height="42" rx="14" fill="rgba(255,255,255,0.8)"/>
+
+    <!-- 金属バンド -->
+    <rect x="-33" y="-153" width="66" height="18" rx="5" fill="rgba(255,255,255,0.5)"/>
+
+    <!-- 鉛筆本体（白・左側に明るい面を表現） -->
+    <rect x="-31" y="-135" width="62" height="224" rx="10" fill="url(#pencilBody)"/>
+    <!-- 本体左面ハイライト -->
+    <rect x="-31" y="-135" width="22" height="224" rx="10" fill="rgba(255,255,255,0.35)"/>
+    <!-- 本体右面シャドウ -->
+    <rect x="16" y="-135" width="15" height="224" rx="0" fill="rgba(200,200,220,0.25)"/>
+
+    <!-- 木の部分（台形） -->
+    <polygon points="-31,89 31,89 22,140 -22,140" fill="url(#woodGrad)"/>
+    <!-- 木の左面ハイライト -->
+    <polygon points="-31,89 -9,89 -16,140 -22,140" fill="rgba(255,255,255,0.4)"/>
+
+    <!-- 芯の先端（白） -->
+    <polygon points="-22,140 22,140 0,196" fill="rgba(255,255,255,0.95)"/>
+    <!-- 芯のハイライト -->
+    <polygon points="-22,140 -4,140 0,196" fill="rgba(255,255,255,0.5)"/>
+  </g>
+</svg>
