@@ -239,17 +239,147 @@ function runUpdate() {
   }
 }
 
-// ===== ブラウザで開く（ダウンロード用） =====
-function openInBrowser() {
+// ===== スマートダウンロード =====
+function smartDownload() {
+  var folder = localStorage.getItem(FOLDER_KEY);
+  if (!folder) {
+    showToast("⚙️ 設定でフォルダを指定してください", "warn");
+    return;
+  }
   var t = tabs[activeId];
   if (!t) return;
-  var url = t.history[t.histIdx] || "";
-  if (!url) return;
-  if (window.cep && window.cep.util) {
-    window.cep.util.openURLInDefaultBrowser(url);
-  } else {
-    window.open(url, "_blank");
+  var pageUrl = t.history[t.histIdx] || "";
+  if (!pageUrl || pageUrl === HOME_URL) {
+    showToast("イラストのページを開いてから押してください", "warn");
+    return;
   }
+
+  showToast("⬇️ 解析中...", "info");
+
+  try {
+    var https  = require("https");
+    var http   = require("http");
+    var fs     = require("fs");
+    var path   = require("path");
+    var urlMod = require("url");
+
+    var parsed = urlMod.parse(pageUrl);
+    var client = parsed.protocol === "https:" ? https : http;
+
+    // ページ HTML を取得してダウンロード URL を探す
+    var req = client.get(pageUrl, { headers: { "User-Agent": "Mozilla/5.0" } }, function(res) {
+      // リダイレクト対応
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        var redirected = res.headers.location;
+        if (!redirected.startsWith("http")) redirected = parsed.protocol + "//" + parsed.host + redirected;
+        fetchAndSave(redirected, folder, path, fs, https, http, urlMod);
+        return;
+      }
+      var html = "";
+      res.setEncoding("utf8");
+      res.on("data", function(d) { html += d; });
+      res.on("end", function() {
+        var imgUrl = findImageUrl(html, pageUrl, parsed, urlMod);
+        if (!imgUrl) {
+          showToast("❌ 画像URLが見つかりませんでした", "error");
+          return;
+        }
+        fetchAndSave(imgUrl, folder, path, fs, https, http, urlMod);
+      });
+    });
+    req.on("error", function(e) { showToast("❌ " + e.message, "error"); });
+
+  } catch(e) {
+    showToast("❌ Node.js エラー: " + e.message, "error");
+  }
+}
+
+// ページ HTML から画像 URL を抽出
+function findImageUrl(html, pageUrl, parsed, urlMod) {
+  var candidates = [];
+
+  // 1. <a download href="..."> を優先
+  var dlRe = /<a[^>]+download[^>]*href=["']([^"']+)["']/gi;
+  var m;
+  while ((m = dlRe.exec(html)) !== null) candidates.push({ url: m[1], score: 100 });
+
+  // 2. 直接ファイルリンク (.png/.jpg/.gif/.svg/.zip)
+  var fileRe = /href=["']([^"']+\.(?:png|jpg|jpeg|gif|svg|webp|zip))["']/gi;
+  while ((m = fileRe.exec(html)) !== null) candidates.push({ url: m[1], score: 80 });
+
+  // 3. blogspot / CDN 画像 (irasutoya 等)
+  var blogRe = /["'](https?:\/\/(?:\d+\.bp\.blogspot\.com|storage\.googleapis\.com|cdn\.|img\.)[^"']+\.(?:png|jpg|jpeg|gif))["']/gi;
+  while ((m = blogRe.exec(html)) !== null) candidates.push({ url: m[1], score: 90 });
+
+  // 4. og:image
+  var ogRe = /<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i;
+  m = ogRe.exec(html);
+  if (m) candidates.push({ url: m[1], score: 70 });
+
+  if (!candidates.length) return null;
+
+  // スコア最高のものを選択
+  candidates.sort(function(a, b) { return b.score - a.score; });
+  var best = candidates[0].url;
+
+  // 相対URLを絶対URLに変換
+  if (!best.startsWith("http")) {
+    best = best.startsWith("//")
+      ? parsed.protocol + best
+      : parsed.protocol + "//" + parsed.host + (best.startsWith("/") ? best : "/" + best);
+  }
+  return best;
+}
+
+// URL からファイルを取得してフォルダに保存
+function fetchAndSave(imgUrl, folder, path, fs, https, http, urlMod) {
+  showToast("⬇️ ダウンロード中...", "info");
+
+  var parsed2 = urlMod.parse(imgUrl);
+  var client2 = parsed2.protocol === "https:" ? https : http;
+
+  var ext  = (path.extname(parsed2.pathname) || ".png").split("?")[0].toLowerCase();
+  var base = path.basename(parsed2.pathname, ext).replace(/[\\/:*?"<>|]/g, "_").slice(0, 40) || "illust";
+  var sep  = folder.endsWith("/") || folder.endsWith("\\") ? "" : "/";
+  var dest = folder + sep + base + "_" + Date.now() + ext;
+
+  var file = fs.createWriteStream(dest);
+  var req2 = client2.get(imgUrl, { headers: { "User-Agent": "Mozilla/5.0", "Referer": imgUrl } }, function(res2) {
+    if (res2.statusCode >= 300 && res2.statusCode < 400 && res2.headers.location) {
+      file.close();
+      fs.unlink(dest, function(){});
+      fetchAndSave(res2.headers.location, folder, path, fs, https, http, urlMod);
+      return;
+    }
+    res2.pipe(file);
+    file.on("finish", function() {
+      file.close();
+      showToast("✅ 保存しました: " + path.basename(dest), "ok");
+    });
+  });
+  req2.on("error", function(e) {
+    fs.unlink(dest, function(){});
+    showToast("❌ " + e.message, "error");
+  });
+}
+
+// ===== トースト通知 =====
+function showToast(msg, type) {
+  var el = document.getElementById("dl-toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "dl-toast";
+    document.body.appendChild(el);
+  }
+  el.style.background =
+    type === "ok"    ? "rgba(34,197,94,0.93)"  :
+    type === "warn"  ? "rgba(234,179,8,0.93)"   :
+    type === "error" ? "rgba(239,68,68,0.93)"   :
+                       "rgba(100,116,139,0.93)";
+  el.textContent  = msg;
+  el.style.opacity = "1";
+  clearTimeout(el._t);
+  el._t = setTimeout(function() { el.style.opacity = "0"; }, 3000);
 }
 
 // ===== 設定パネル開閉 =====
