@@ -45,6 +45,26 @@
       letter-spacing: -0.02em;
     }
 
+    #back-btn {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(236,72,153,0.08);
+      border: 1px solid rgba(236,72,153,0.25);
+      border-radius: 8px;
+      padding: 4px 9px;
+      font-size: 10px;
+      color: #ec4899;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    #back-btn:hover {
+      background: rgba(236,72,153,0.15);
+    }
+
     #settings-btn {
       display: flex;
       align-items: center;
@@ -195,9 +215,14 @@
         <img src="icon.svg" alt="ラクポチ イラスト" />
         <span>ラクポチ イラスト</span>
       </div>
-      <button id="settings-btn" onclick="toggleSettings()">
-        ⚙️ 設定
-      </button>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <button id="back-btn" onclick="goBack()" style="display:none;">
+          ← 戻る
+        </button>
+        <button id="settings-btn" onclick="toggleSettings()">
+          ⚙️ 設定
+        </button>
+      </div>
     </div>
 
     <!-- 検索 iframe -->
@@ -205,7 +230,6 @@
       id="search-frame"
       src="https://rakupochi-illust.com"
       allowtransparency="true"
-      sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
     ></iframe>
 
     <!-- 設定パネル -->
@@ -235,10 +259,12 @@
 
   <script src="js/panel.js"></script>
   <script>
-    // CEP 内で target="_blank" リンクをシステムブラウザで開く
+    // target="_blank" リンクをパネル内 iframe で開く
     window.open = function(url) {
-      if (url && window.cep && window.cep.util) {
-        window.cep.util.openURLInDefaultBrowser(url);
+      if (url && url !== 'about:blank') {
+        var frame = document.getElementById('search-frame');
+        frame.src = url;
+        document.getElementById('back-btn').style.display = 'flex';
       }
       return null;
     };

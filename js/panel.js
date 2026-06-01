@@ -1,10 +1,18 @@
 const FOLDER_KEY = "rakupochi_download_folder";
+const HOME_URL   = "https://rakupochi-illust.com";
 
 // ===== 起動時：保存済みフォルダを復元 =====
 (function init() {
   const saved = localStorage.getItem(FOLDER_KEY);
   if (saved) updateFolderDisplay(saved);
 })();
+
+// ===== 戻る（検索トップへ） =====
+function goBack() {
+  var frame = document.getElementById('search-frame');
+  frame.src = HOME_URL;
+  document.getElementById('back-btn').style.display = 'none';
+}
 
 // ===== 設定パネル開閉 =====
 function toggleSettings() {
