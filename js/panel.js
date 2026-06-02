@@ -28,8 +28,21 @@ var PROXY_PORT = null;   // 起動後に確定
   });
 })();
 
+function setProxyStatus(msg) {
+  var el = document.getElementById("proxy-status");
+  if (el) el.innerHTML = msg;
+}
+
 // ===== プロキシサーバー =====
 function startProxy(onReady) {
+  // Node.js が使えるか確認
+  if (typeof require === "undefined") {
+    setProxyStatus("❌ Node.js 未対応<br>manifest に --enable-nodejs が必要です");
+    PROXY_PORT = null;
+    createTab(HOME_URL, "ラクポチ イラスト");
+    return;
+  }
+
   try {
     var http   = require("http");
     var https  = require("https");
@@ -124,11 +137,23 @@ function startProxy(onReady) {
     });
 
     server.listen(0, "127.0.0.1", function() {
-      onReady(server.address().port);
+      var port = server.address().port;
+      setProxyStatus(
+        "✅ Node.js: 有効<br>" +
+        "✅ プロキシ: ポート " + port + " で起動中<br>" +
+        "✅ ダウンロード: 各サイトのボタンで保存可能"
+      );
+      onReady(port);
+    });
+
+    server.on("error", function(e) {
+      setProxyStatus("❌ プロキシ起動失敗: " + e.message);
+      PROXY_PORT = null;
+      createTab(HOME_URL, "ラクポチ イラスト");
     });
 
   } catch(e) {
-    // Node.js が使えない場合はプロキシなしで起動
+    setProxyStatus("❌ エラー: " + e.message);
     PROXY_PORT = null;
     createTab(HOME_URL, "ラクポチ イラスト");
   }
